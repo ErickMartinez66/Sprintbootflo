@@ -1,0 +1,124 @@
+package com.example.sprintboot.dto;
+
+import java.time.LocalDate;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "DTO que representa un pedido de flores, incluyendo el cliente y su costo de creación.")
+public class PedidoDTO {
+
+	@Schema(description = "ID del pedido", example = "1")
+	private Long id;
+
+	@Schema(description = "Precio de venta en pesos", example = "850000.00")
+	private Double precioVenta;
+
+	@Schema(description = "Costo total de inversión (producción) en pesos", example = "420000.00")
+	private Double precioInversion;
+
+	@Schema(description = "Cantidad de flores del arreglo", example = "24")
+	private Integer cantidadFlores;
+
+	@Schema(description = "Color predominante de las flores", example = "rosa")
+	private String colorFlores;
+
+	@Schema(description = "Fecha de entrega en formato ISO-8601", example = "2026-10-01")
+	private LocalDate fechaEntrega;
+
+	@Schema(description = "Accesorios incluidos (lazo, moño, tarjeta…)", example = "lazo de terciopelo, tarjeta personalizada")
+	private String accesorios;
+
+	@Schema(description = "Datos del cliente asociado al pedido")
+	private ClienteDTO cliente;
+
+	@Schema(description = "Costo de creación (desglose de materiales)")
+	private CostoCDTO costoC;
+
+	public PedidoDTO() {
+	}
+
+	public PedidoDTO(Long id, Double precioVenta, Double precioInversion, Integer cantidadFlores,
+			String colorFlores, LocalDate fechaEntrega, String accesorios, ClienteDTO cliente, CostoCDTO costoC) {
+		this.id = id;
+		this.precioVenta = precioVenta;
+		this.precioInversion = precioInversion;
+		this.cantidadFlores = cantidadFlores;
+		this.colorFlores = colorFlores;
+		this.fechaEntrega = fechaEntrega;
+		this.accesorios = accesorios;
+		this.cliente = cliente;
+		this.costoC = costoC;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Double getPrecioVenta() {
+		return precioVenta;
+	}
+
+	public void setPrecioVenta(Double precioVenta) {
+		this.precioVenta = precioVenta;
+	}
+
+	public Double getPrecioInversion() {
+		return precioInversion;
+	}
+
+	public void setPrecioInversion(Double precioInversion) {
+		this.precioInversion = precioInversion;
+	}
+
+	public Integer getCantidadFlores() {
+		return cantidadFlores;
+	}
+
+	public void setCantidadFlores(Integer cantidadFlores) {
+		this.cantidadFlores = cantidadFlores;
+	}
+
+	public String getColorFlores() {
+		return colorFlores;
+	}
+
+	public void setColorFlores(String colorFlores) {
+		this.colorFlores = colorFlores;
+	}
+
+	public LocalDate getFechaEntrega() {
+		return fechaEntrega;
+	}
+
+	public void setFechaEntrega(LocalDate fechaEntrega) {
+		this.fechaEntrega = fechaEntrega;
+	}
+
+	public String getAccesorios() {
+		return accesorios;
+	}
+
+	public void setAccesorios(String accesorios) {
+		this.accesorios = accesorios;
+	}
+
+	public ClienteDTO getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(ClienteDTO cliente) {
+		this.cliente = cliente;
+	}
+
+	public CostoCDTO getCostoC() {
+		return costoC;
+	}
+
+	public void setCostoC(CostoCDTO costoC) {
+		this.costoC = costoC;
+	}
+}
