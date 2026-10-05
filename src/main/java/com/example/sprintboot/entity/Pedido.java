@@ -16,6 +16,8 @@ import jakarta.persistence.Table;
 @Table(name = "pedido")
 public class Pedido {
 
+	public static final double COSTO_POR_FLOR = 250.0;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -23,6 +25,8 @@ public class Pedido {
 	private Double precioVenta;
 
 	private Double precioInversion;
+
+	private Double precioGanancia;
 
 	private Integer cantidadFlores;
 
@@ -42,11 +46,12 @@ public class Pedido {
 	public Pedido() {
 	}
 
-	public Pedido(Long id, Double precioVenta, Double precioInversion, Integer cantidadFlores,
+	public Pedido(Long id, Double precioVenta, Double precioInversion, Double precioGanancia, Integer cantidadFlores,
 			String colorFlores, LocalDate fechaEntrega, String accesorios, Cliente cliente, CostoC costoC) {
 		this.id = id;
 		this.precioVenta = precioVenta;
 		this.precioInversion = precioInversion;
+		this.precioGanancia = precioGanancia;
 		this.cantidadFlores = cantidadFlores;
 		this.colorFlores = colorFlores;
 		this.fechaEntrega = fechaEntrega;
@@ -77,6 +82,14 @@ public class Pedido {
 
 	public void setPrecioInversion(Double precioInversion) {
 		this.precioInversion = precioInversion;
+	}
+
+	public Double getPrecioGanancia() {
+		return precioGanancia;
+	}
+
+	public void setPrecioGanancia(Double precioGanancia) {
+		this.precioGanancia = precioGanancia;
 	}
 
 	public Integer getCantidadFlores() {

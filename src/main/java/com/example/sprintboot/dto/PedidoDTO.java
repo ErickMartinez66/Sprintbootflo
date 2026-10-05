@@ -16,6 +16,9 @@ public class PedidoDTO {
 	@Schema(description = "Costo total de inversión (producción) en pesos", example = "420000.00")
 	private Double precioInversion;
 
+	@Schema(description = "Ganancia del pedido (precio de venta - inversión) en pesos", example = "430000.00")
+	private Double precioGanancia;
+
 	@Schema(description = "Cantidad de flores del arreglo", example = "24")
 	private Integer cantidadFlores;
 
@@ -37,11 +40,12 @@ public class PedidoDTO {
 	public PedidoDTO() {
 	}
 
-	public PedidoDTO(Long id, Double precioVenta, Double precioInversion, Integer cantidadFlores,
+	public PedidoDTO(Long id, Double precioVenta, Double precioInversion, Double precioGanancia, Integer cantidadFlores,
 			String colorFlores, LocalDate fechaEntrega, String accesorios, ClienteDTO cliente, CostoCDTO costoC) {
 		this.id = id;
 		this.precioVenta = precioVenta;
 		this.precioInversion = precioInversion;
+		this.precioGanancia = precioGanancia;
 		this.cantidadFlores = cantidadFlores;
 		this.colorFlores = colorFlores;
 		this.fechaEntrega = fechaEntrega;
@@ -72,6 +76,14 @@ public class PedidoDTO {
 
 	public void setPrecioInversion(Double precioInversion) {
 		this.precioInversion = precioInversion;
+	}
+
+	public Double getPrecioGanancia() {
+		return precioGanancia;
+	}
+
+	public void setPrecioGanancia(Double precioGanancia) {
+		this.precioGanancia = precioGanancia;
 	}
 
 	public Integer getCantidadFlores() {

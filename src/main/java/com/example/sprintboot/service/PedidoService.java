@@ -21,13 +21,16 @@ public class PedidoService {
 	private final PedidoRepository pedidoRepository;
 	private final ClienteRepository clienteRepository;
 	private final CostoCRepository costoCRepository;
+	private final MesService mesService;
 
 	public PedidoService(PedidoRepository pedidoRepository,
 			ClienteRepository clienteRepository,
-			CostoCRepository costoCRepository) {
+			CostoCRepository costoCRepository,
+			MesService mesService) {
 		this.pedidoRepository = pedidoRepository;
 		this.clienteRepository = clienteRepository;
 		this.costoCRepository = costoCRepository;
+		this.mesService = mesService;
 	}
 
 	public PedidoDTO crear(PedidoDTO dto) {
@@ -46,6 +49,7 @@ public class PedidoService {
 			costoC.setPedido(guardado);
 			costoCRepository.save(costoC);
 		}
+		mesService.calcularPorFecha(guardado.getFechaEntrega());
 		return convertirADto(guardado);
 	}
 
@@ -71,6 +75,7 @@ public class PedidoService {
 	public PedidoDTO actualizar(Long id, PedidoDTO dto) {
 		Pedido pedido = pedidoRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Pedido no encontrado con id " + id));
+		LocalDate fechaEntregaAnterior = pedido.getFechaEntrega();
 		aplicarCampos(pedido, dto);
 
 		if (dto.getCliente() != null) {
@@ -87,11 +92,18 @@ public class PedidoService {
 			aplicarCostoC(costoC, dto.getCostoC());
 			costoCRepository.save(costoC);
 		}
-		return convertirADto(pedidoRepository.save(pedido));
+		Pedido guardado = pedidoRepository.save(pedido);
+		mesService.calcularPorFecha(fechaEntregaAnterior);
+		mesService.calcularPorFecha(guardado.getFechaEntrega());
+		return convertirADto(guardado);
 	}
 
 	public void eliminar(Long id) {
+		Pedido pedido = pedidoRepository.findById(id).orElse(null);
 		pedidoRepository.deleteById(id);
+		if (pedido != null) {
+			mesService.calcularPorFecha(pedido.getFechaEntrega());
+		}
 	}
 
 	public List<PedidoDTO> listarPorCliente(Long clienteId) {
@@ -108,6 +120,19 @@ public class PedidoService {
 
 	public List<PedidoDTO> listarPorFecha(LocalDate fecha) {
 		return pedidoRepository.findByFechaEntrega(fecha).stream()
+				.map(this::convertirADto)
+				.toList();
+	}
+
+	public List<PedidoDTO> listarPorMes(Long mesId) {
+		int anio = (int) (mesId / 100);
+		int mes = (int) (mesId % 100);
+		if (mes < 1 || mes > 12 || anio < 1) {
+			throw new IllegalArgumentException("ID de mes inválido: " + mesId);
+		}
+		LocalDate inicio = LocalDate.of(anio, mes, 1);
+		LocalDate finExclusivo = inicio.plusMonths(1);
+		return pedidoRepository.findByFechaEntregaBetween(inicio, finExclusivo).stream()
 				.map(this::convertirADto)
 				.toList();
 	}
@@ -129,11 +154,26 @@ public class PedidoService {
 
 	private void aplicarCampos(Pedido pedido, PedidoDTO dto) {
 		pedido.setPrecioVenta(dto.getPrecioVenta());
-		pedido.setPrecioInversion(dto.getPrecioInversion());
 		pedido.setCantidadFlores(dto.getCantidadFlores());
 		pedido.setColorFlores(dto.getColorFlores());
 		pedido.setFechaEntrega(dto.getFechaEntrega());
 		pedido.setAccesorios(dto.getAccesorios());
+		calcularInversionYGanancia(pedido);
+	}
+
+	private void calcularInversionYGanancia(Pedido pedido) {
+		if (pedido.getCantidadFlores() == null) {
+			pedido.setPrecioInversion(null);
+			pedido.setPrecioGanancia(null);
+			return;
+		}
+		Double inversion = pedido.getCantidadFlores() * Pedido.COSTO_POR_FLOR;
+		pedido.setPrecioInversion(inversion);
+		if (pedido.getPrecioVenta() != null) {
+			pedido.setPrecioGanancia(pedido.getPrecioVenta() - inversion);
+		} else {
+			pedido.setPrecioGanancia(null);
+		}
 	}
 
 	private void aplicarCostoC(CostoC costoC, CostoCDTO dto) {
@@ -152,6 +192,7 @@ public class PedidoService {
 		dto.setId(p.getId());
 		dto.setPrecioVenta(p.getPrecioVenta());
 		dto.setPrecioInversion(p.getPrecioInversion());
+		dto.setPrecioGanancia(p.getPrecioGanancia());
 		dto.setCantidadFlores(p.getCantidadFlores());
 		dto.setColorFlores(p.getColorFlores());
 		dto.setFechaEntrega(p.getFechaEntrega());
