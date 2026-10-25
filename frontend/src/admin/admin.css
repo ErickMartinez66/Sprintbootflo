@@ -115,6 +115,71 @@
   background: rgba(233, 195, 124, 0.08);
 }
 
+.admin-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 0%, #ffffff, var(--marfil-100));
+}
+
+.admin-login-card {
+  width: min(420px, 100%);
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-vino);
+  padding: 36px 38px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.admin-login-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-login-titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 1.9rem;
+  color: var(--vino-900);
+}
+
+.admin-login-subtitulo {
+  margin: 4px 0 0;
+  color: var(--texto-suave);
+  font-size: 0.95rem;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-login-error {
+  margin: 0;
+  color: var(--error);
+  font-weight: 600;
+  font-size: 0.93rem;
+}
+
+.admin-login-boton {
+  align-self: stretch;
+  margin-top: 8px;
+}
+
+button.admin-volver {
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+
 .admin-contenido {
   flex: 1;
   padding: 40px 48px;
@@ -373,6 +438,35 @@
   font-size: 0.74rem;
 }
 
+.admin-color-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-color-picker input[type='color'] {
+  width: 46px;
+  height: 42px;
+  padding: 3px;
+  border: 2px solid var(--marfil-300);
+  border-radius: 10px;
+  background: #fffdf7;
+  cursor: pointer;
+}
+
+.admin-color-picker input[type='text'] {
+  flex: 1;
+}
+
+.admin-color-muestra {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--marfil-300);
+  vertical-align: middle;
+}
+
 /* ===== Configuración del formulario ===== */
 .admin-config {
   background: var(--blanco);
@@ -396,7 +490,8 @@
 }
 
 .admin-estado-activo,
-.admin-estado-oculto {
+.admin-estado-oculto,
+.admin-estado-pendiente {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 700;
@@ -409,6 +504,12 @@
   background: #e8f6ee;
   border: 1px solid #b6e0c6;
   color: #1e7a45;
+}
+
+.admin-estado-pendiente {
+  background: #fdf3e2;
+  border: 1px solid #f0d3a1;
+  color: #9a6417;
 }
 
 .admin-estado-oculto {

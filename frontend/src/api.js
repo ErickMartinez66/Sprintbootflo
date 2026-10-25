@@ -1,10 +1,25 @@
 const API_BASE = '/api';
+import { obtenerToken, limpiarToken } from './auth.js';
 
 async function request(path, opciones = {}) {
+  const token = obtenerToken();
+  const headers = opciones.body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: opciones.body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
+    headers: { ...headers, ...(opciones.headers || {}) },
     ...opciones,
   });
+
+  if (res.status === 401 && !path.startsWith('/auth/login')) {
+    limpiarToken();
+    if (typeof window !== 'undefined' && !window.location.pathname.includes('/admin/login')) {
+      window.location.href = '/admin/login';
+    }
+    throw new Error('No autorizado');
+  }
 
   if (!res.ok) {
     let mensaje = `Error ${res.status}`;
@@ -31,6 +46,24 @@ export function crearPedido(pedido) {
 
 export function eliminarPedido(id) {
   return request(`/pedidos/${id}`, { method: 'DELETE' });
+}
+
+export function actualizarEstadoPedido(id, estado) {
+  return request(`/pedidos/${id}/estado`, {
+    method: 'PATCH',
+    body: JSON.stringify({ estado }),
+  });
+}
+
+export function loginAdmin(usuario, password) {
+  return request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ usuario, password }),
+  });
+}
+
+export function logoutAdmin() {
+  return request('/auth/logout', { method: 'POST' });
 }
 
 export function listarMeses() {
@@ -121,6 +154,32 @@ export function actualizarAccesorio(id, accesorio) {
 
 export function eliminarAccesorio(id) {
   return request(`/accesorios/${id}`, { method: 'DELETE' });
+}
+
+export function listarColores() {
+  return request('/colores');
+}
+
+export function listarColoresActivos() {
+  return request('/colores/activos');
+}
+
+export function crearColor(color) {
+  return request('/colores', {
+    method: 'POST',
+    body: JSON.stringify(color),
+  });
+}
+
+export function actualizarColor(id, color) {
+  return request(`/colores/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(color),
+  });
+}
+
+export function eliminarColor(id) {
+  return request(`/colores/${id}`, { method: 'DELETE' });
 }
 
 export function listarArreglosActivos() {

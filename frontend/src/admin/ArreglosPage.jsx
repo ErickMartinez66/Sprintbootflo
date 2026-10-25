@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Package, Save, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Package, Plus, Save, Trash2 } from 'lucide-react';
 import {
-  actualizarArreglo,
-  crearArreglo,
-  eliminarArreglo,
-  listarArreglos,
+  actualizarColor,
+  crearColor,
+  eliminarColor,
+  listarColores,
 } from '../api.js';
 import useAosRefresh from '../hooks/useAosRefresh.js';
-import COLORES from '../data/colores.js';
+import AccesoriosManager from './AccesoriosManager.jsx';
 import DataState from './DataState.jsx';
+import FormModal from './FormModal.jsx';
+import { guardarFormConfig, obtenerFormConfig } from '../data/formConfig.js';
 
 const GRADIENTE_POR_DEFECTO = 'linear-gradient(160deg, #faead6, #efbe8f)';
 const NOMBRE_POR_DEFECTO = 'Arreglo personalizado';
@@ -20,18 +21,121 @@ function precioPorFlorDe(arreglo) {
   return flores > 0 ? Math.round(precio / flores) : precio;
 }
 
-function ConfigForm({ arreglo, onGuardar, guardando }) {
+function ColorForm({ color, onGuardar, onCancelar }) {
+  const [nombre, setNombre] = useState(color?.nombre ?? '');
+  const [hex, setHex] = useState(color?.hex ?? '#f4a7c3');
+  const [activo, setActivo] = useState(color?.activo ?? true);
+  const [orden, setOrden] = useState(color?.orden ?? 0);
+
+  const hexValido = /^#[0-9a-fA-F]{6}$/.test(hex);
+
+  const enviar = (e) => {
+    e.preventDefault();
+    onGuardar({ nombre, hex, activo, orden: Number(orden) || 0 });
+  };
+
+  return (
+    <form className="admin-form" onSubmit={enviar}>
+      <div className="campo">
+        <label htmlFor="colorNombre">Nombre del color</label>
+        <input
+          id="colorNombre"
+          type="text"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          placeholder="Ej: Rosa claro"
+          required
+        />
+      </div>
+
+      <div className="admin-form-fila">
+        <div className="campo">
+          <label htmlFor="colorHex">Color</label>
+          <div className="admin-color-picker">
+            <input
+              id="colorHex"
+              type="color"
+              value={hexValido ? hex : '#000000'}
+              onChange={(e) => setHex(e.target.value)}
+            />
+            <input
+              type="text"
+              value={hex}
+              onChange={(e) => setHex(e.target.value)}
+              placeholder="#f4a7c3"
+              aria-label="Código hexadecimal"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="campo">
+          <label htmlFor="colorOrden">Orden</label>
+          <input
+            id="colorOrden"
+            type="number"
+            value={orden}
+            onChange={(e) => setOrden(e.target.value)}
+          />
+          <small className="admin-ayuda">Menor número aparece primero.</small>
+        </div>
+      </div>
+
+      <label className="admin-check">
+        <input
+          type="checkbox"
+          checked={activo}
+          onChange={(e) => setActivo(e.target.checked)}
+        />
+        Mostrar en el formulario
+      </label>
+
+      <div className="admin-form-acciones">
+        <button type="button" className="btn btn-secundario" onClick={onCancelar}>
+          Cancelar
+        </button>
+        <button type="submit" className="btn btn-primario">
+          Guardar color
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function ConfigForm({ arreglo, colores, onGuardar, guardando }) {
   const [nombre, setNombre] = useState(arreglo?.nombre ?? NOMBRE_POR_DEFECTO);
   const [precioPorFlor, setPrecioPorFlor] = useState(precioPorFlorDe(arreglo));
   const [cantidadFlores, setCantidadFlores] = useState(arreglo?.cantidadFlores ?? 24);
-  const [colorFlores, setColorFlores] = useState(arreglo?.colorFlores ?? 'rosa');
+  const [colorFlores, setColorFlores] = useState(
+    colores.some((c) => c.valor === arreglo?.colorFlores)
+      ? arreglo.colorFlores
+      : (colores[0]?.valor ?? '')
+  );
   const [accesorios] = useState(arreglo?.accesorios ?? '');
   const [emoji, setEmoji] = useState(arreglo?.emoji ?? '💐');
   const [gradiente, setGradiente] = useState(arreglo?.gradiente ?? GRADIENTE_POR_DEFECTO);
 
-  const colores = COLORES.some((c) => c.valor === colorFlores)
-    ? COLORES
-    : [...COLORES, { valor: colorFlores, etiqueta: `${colorFlores} (actual)` }];
+  useEffect(() => {
+    setNombre(arreglo?.nombre ?? NOMBRE_POR_DEFECTO);
+    setPrecioPorFlor(precioPorFlorDe(arreglo));
+    setCantidadFlores(arreglo?.cantidadFlores ?? 24);
+    setColorFlores(
+      colores.some((c) => c.valor === arreglo?.colorFlores)
+        ? arreglo.colorFlores
+        : (colores[0]?.valor ?? '')
+    );
+    setEmoji(arreglo?.emoji ?? '💐');
+    setGradiente(arreglo?.gradiente ?? GRADIENTE_POR_DEFECTO);
+  }, [
+    arreglo?.id,
+    arreglo?.nombre,
+    arreglo?.precioVenta,
+    arreglo?.cantidadFlores,
+    arreglo?.colorFlores,
+    arreglo?.emoji,
+    arreglo?.gradiente,
+    colores,
+  ]);
 
   const enviar = (e) => {
     e.preventDefault();
@@ -106,24 +210,38 @@ function ConfigForm({ arreglo, onGuardar, guardando }) {
             id="configColor"
             value={colorFlores}
             onChange={(e) => setColorFlores(e.target.value)}
+            disabled={colores.length === 0}
           >
+            {colores.length === 0 && (
+              <option value="">Sin colores disponibles</option>
+            )}
             {colores.map((c) => (
               <option key={c.valor} value={c.valor}>
-                {c.etiqueta}
+                {c.nombre}
               </option>
             ))}
           </select>
+          {colores.length === 0 && (
+            <small className="admin-ayuda">
+              Crea un color en "Colores del formulario" para poder elegirlo aquí.
+            </small>
+          )}
         </div>
 
         <div className="campo">
           <label>Accesorios por defecto</label>
-          <Link
-            to="/admin/accesorios"
+          <button
+            type="button"
             className="btn btn-secundario admin-btn-xs"
             style={{ alignSelf: 'flex-start' }}
+            onClick={() =>
+              document
+                .getElementById('accesorios-formulario')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
           >
             <Package size={14} aria-hidden="true" /> Gestionar accesorios
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -166,17 +284,22 @@ function ConfigForm({ arreglo, onGuardar, guardando }) {
 }
 
 function ArreglosPage() {
-  const [arreglos, setArreglos] = useState([]);
+  const [config, setConfig] = useState(null);
+  const [colores, setColores] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [cargandoColores, setCargandoColores] = useState(true);
   const [error, setError] = useState('');
+  const [errorColores, setErrorColores] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [exito, setExito] = useState(false);
+  const [colorModal, setColorModal] = useState(null);
+  const [guardandoColor, setGuardandoColor] = useState(false);
 
-  const cargar = useCallback(async () => {
+  const cargar = useCallback(() => {
     try {
       setCargando(true);
       setError('');
-      setArreglos(await listarArreglos());
+      setConfig(obtenerFormConfig());
     } catch (err) {
       setError(err.message);
     } finally {
@@ -184,26 +307,40 @@ function ArreglosPage() {
     }
   }, []);
 
+  const cargarColores = useCallback(async () => {
+    try {
+      setCargandoColores(true);
+      setErrorColores('');
+      setColores(await listarColores());
+    } catch (err) {
+      setErrorColores(err.message);
+    } finally {
+      setCargandoColores(false);
+    }
+  }, []);
+
   useEffect(() => {
     cargar();
-  }, [cargar]);
+    cargarColores();
+  }, [cargar, cargarColores]);
 
-  useAosRefresh(cargando);
+  useAosRefresh(cargando || cargandoColores);
 
-  const config = arreglos[0] ?? null;
-  const duplicados = arreglos.slice(1);
+  const coloresActivos = useMemo(
+    () => colores.filter((color) => color.activo !== false),
+    [colores]
+  );
 
   const guardar = async (datos) => {
     setGuardando(true);
     setError('');
     setExito(false);
     try {
-      if (config) {
-        await actualizarArreglo(config.id, datos);
-      } else {
-        await crearArreglo(datos);
-      }
-      await cargar();
+      const actualizado = guardarFormConfig({
+        ...(config || {}),
+        ...datos,
+      });
+      setConfig(actualizado);
       setExito(true);
     } catch (err) {
       setError(err.message);
@@ -212,22 +349,49 @@ function ArreglosPage() {
     }
   };
 
-  const limpiarDuplicados = async () => {
-    if (
-      !window.confirm(
-        `Se eliminarán ${duplicados.length} configuraciones antiguas. Esta acción no se puede deshacer.`
-      )
-    ) {
+  const guardarColor = async (datos) => {
+    setGuardandoColor(true);
+    setErrorColores('');
+    try {
+      if (colorModal === 'crear') {
+        await crearColor(datos);
+      } else {
+        await actualizarColor(colorModal.color.id, datos);
+      }
+      setColorModal(null);
+      await cargarColores();
+    } catch (err) {
+      setErrorColores(err.message);
+    } finally {
+      setGuardandoColor(false);
+    }
+  };
+
+  const alternarColor = async (color) => {
+    setErrorColores('');
+    try {
+      await actualizarColor(color.id, {
+        nombre: color.nombre,
+        hex: color.hex,
+        activo: !color.activo,
+        orden: color.orden,
+      });
+      await cargarColores();
+    } catch (err) {
+      setErrorColores(err.message);
+    }
+  };
+
+  const eliminarColorFlor = async (color) => {
+    if (!window.confirm(`¿Eliminar el color "${color.nombre}"?`)) {
       return;
     }
-    setError('');
+    setErrorColores('');
     try {
-      for (const arreglo of duplicados) {
-        await eliminarArreglo(arreglo.id);
-      }
-      await cargar();
+      await eliminarColor(color.id);
+      await cargarColores();
     } catch (err) {
-      setError(err.message);
+      setErrorColores(err.message);
     }
   };
 
@@ -238,29 +402,10 @@ function ArreglosPage() {
           <h1 className="admin-titulo">Formulario de pedido</h1>
           <p className="admin-subtitulo">
             Configura los valores por defecto del formulario único que el
-            cliente ve en la tienda.
+            cliente ve en la tienda. Los cambios se guardan localmente en este navegador.
           </p>
         </div>
       </div>
-
-      {duplicados.length > 0 && (
-        <div className="admin-resumen" data-aos="fade-up" data-aos-delay="40">
-          <div>
-            <strong>Configuraciones antiguas detectadas</strong>
-            <p className="admin-subtitulo">
-              Se encontraron {duplicados.length} registros anteriores. Se usa el
-              primero como configuración activa.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn admin-btn-xs admin-btn-peligro"
-            onClick={limpiarDuplicados}
-          >
-            <Trash2 size={14} aria-hidden="true" /> Limpiar duplicados
-          </button>
-        </div>
-      )}
 
       <DataState cargando={cargando} vacio={false}>
         <div className="admin-config" data-aos="fade-up" data-aos-delay="80">
@@ -269,13 +414,123 @@ function ArreglosPage() {
             <p className="admin-ok">Configuración guardada correctamente.</p>
           )}
           <ConfigForm
-            key={config?.id ?? 'nuevo'}
+            key={
+              config
+                ? `${config.id}-${config.nombre}-${config.precioVenta}-${config.cantidadFlores}-${config.colorFlores}-${config.emoji}-${config.gradiente}`
+                : 'nuevo'
+            }
             arreglo={config}
+            colores={coloresActivos}
             guardando={guardando}
             onGuardar={guardar}
           />
         </div>
       </DataState>
+
+      <div className="admin-config" data-aos="fade-up" data-aos-delay="120">
+        <div className="admin-cabecera admin-cabecera-interna">
+          <div>
+            <strong>Colores del formulario</strong>
+            <p className="admin-ayuda">
+              Crea los colores con su nombre. Los colores visibles aparecerán en
+              la sección de colores del formulario de la tienda.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primario admin-btn-xs"
+            onClick={() => setColorModal('crear')}
+          >
+            <Plus size={16} aria-hidden="true" /> Nuevo color
+          </button>
+        </div>
+
+        {errorColores && <p className="admin-error">{errorColores}</p>}
+
+        <DataState
+          cargando={cargandoColores}
+          vacio={colores.length === 0}
+          mensajeVacio="Aún no hay colores. Crea el primero para que aparezca en la tienda."
+        >
+          <div className="admin-tabla-envoltura">
+            <table className="admin-tabla">
+              <thead>
+                <tr>
+                  <th>Color</th>
+                  <th>Nombre</th>
+                  <th>Identificador</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {colores.map((color) => (
+                  <tr key={color.id}>
+                    <td>
+                      <span
+                        className="admin-color-muestra"
+                        style={{ background: color.hex }}
+                      />
+                    </td>
+                    <td>{color.nombre}</td>
+                    <td className="admin-mono">{color.valor}</td>
+                    <td>
+                      <span
+                        className={
+                          color.activo
+                            ? 'admin-estado-activo'
+                            : 'admin-estado-oculto'
+                        }
+                      >
+                        {color.activo ? 'Visible' : 'Oculto'}
+                      </span>
+                    </td>
+                    <td className="admin-acciones">
+                      <button
+                        type="button"
+                        className="btn btn-secundario admin-btn-xs"
+                        onClick={() => alternarColor(color)}
+                      >
+                        {color.activo ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secundario admin-btn-xs"
+                        onClick={() => setColorModal({ color })}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn admin-btn-xs admin-btn-peligro"
+                        onClick={() => eliminarColorFlor(color)}
+                      >
+                        <Trash2 size={14} aria-hidden="true" /> Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DataState>
+      </div>
+
+      <AccesoriosManager id="accesorios-formulario" />
+
+      {colorModal && (
+        <FormModal
+          titulo={colorModal === 'crear' ? 'Nuevo color' : 'Editar color'}
+          onCerrar={() => setColorModal(null)}
+        >
+          <ColorForm
+            color={colorModal === 'crear' ? null : colorModal.color}
+            onGuardar={guardarColor}
+            onCancelar={() => setColorModal(null)}
+          />
+          {guardandoColor && <p className="admin-estado">Guardando…</p>}
+        </FormModal>
+      )}
     </div>
   );
 }

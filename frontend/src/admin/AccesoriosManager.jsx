@@ -57,7 +57,7 @@ function AccesorioForm({ accesorio, onGuardar, onCancelar }) {
   );
 }
 
-function AccesoriosPage() {
+function AccesoriosManager({ id }) {
   const [accesorios, setAccesorios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -114,22 +114,32 @@ function AccesoriosPage() {
   };
 
   return (
-    <div className="admin-panel">
-      <div className="admin-cabecera" data-aos="fade-up">
+    <div className="admin-config" id={id} data-aos="fade-up" data-aos-delay="160">
+      <div className="admin-cabecera admin-cabecera-interna">
         <div>
-          <h1 className="admin-titulo">Accesorios</h1>
-          <p className="admin-subtitulo">
+          <strong>Accesorios</strong>
+          <p className="admin-ayuda">
             Crea los accesorios con sus precios; aparecerán en el formulario de
             pedido de la tienda.
           </p>
         </div>
-        <button className="btn btn-primario" onClick={() => setModal('crear')}>
-          <Plus size={18} aria-hidden="true" /> Nuevo accesorio
+        <button
+          type="button"
+          className="btn btn-primario admin-btn-xs"
+          onClick={() => setModal('crear')}
+        >
+          <Plus size={16} aria-hidden="true" /> Nuevo accesorio
         </button>
       </div>
 
-      <DataState cargando={cargando} error={error || undefined} vacio={accesorios.length === 0}>
-        <div className="admin-tabla-envoltura" data-aos="fade-up" data-aos-delay="120">
+      {error && <p className="admin-error">{error}</p>}
+
+      <DataState
+        cargando={cargando}
+        vacio={accesorios.length === 0}
+        mensajeVacio="Aún no hay accesorios. Crea el primero para que aparezca en la tienda."
+      >
+        <div className="admin-tabla-envoltura">
           <table className="admin-tabla">
             <thead>
               <tr>
@@ -185,4 +195,4 @@ function AccesoriosPage() {
   );
 }
 
-export default AccesoriosPage;
+export default AccesoriosManager;

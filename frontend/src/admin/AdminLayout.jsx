@@ -1,7 +1,22 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
-import { Flower, Sprout, CalendarDays, ShoppingBag, Wallet, Package, ArrowLeft } from 'lucide-react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Flower, Sprout, CalendarDays, ShoppingBag, Wallet, ArrowLeft, LogOut } from 'lucide-react';
+import { limpiarToken } from '../auth.js';
+import { logoutAdmin } from '../api.js';
 
 function AdminLayout() {
+  const navigate = useNavigate();
+
+  const cerrarSesion = async () => {
+    try {
+      await logoutAdmin();
+    } catch {
+      // Ignorar errores al cerrar sesión
+    } finally {
+      limpiarToken();
+      navigate('/admin/login', { replace: true });
+    }
+  };
+
   return (
     <div className="admin">
       <aside className="admin-sidebar">
@@ -34,21 +49,15 @@ function AdminLayout() {
             <ShoppingBag size={18} aria-hidden="true" /> Viajes
           </NavLink>
           <NavLink
-            to="/admin/accesorios"
-            className={({ isActive }) => (isActive ? 'admin-menu-item activo' : 'admin-menu-item')}
-          >
-            <Package size={18} aria-hidden="true" /> Accesorios
-          </NavLink>
-          <NavLink
             to="/admin/inversion"
             className={({ isActive }) => (isActive ? 'admin-menu-item activo' : 'admin-menu-item')}
           >
             <Wallet size={18} aria-hidden="true" /> Inversión fija
           </NavLink>
         </nav>
-        <Link to="/" className="admin-volver">
-          <ArrowLeft size={15} aria-hidden="true" /> Volver a la tienda
-        </Link>
+        <button type="button" className="admin-volver" onClick={cerrarSesion}>
+          <LogOut size={15} aria-hidden="true" /> Cerrar sesión
+        </button>
       </aside>
       <main className="admin-contenido">
         <Outlet />

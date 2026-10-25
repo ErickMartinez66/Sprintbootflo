@@ -13,8 +13,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
 	List<Pedido> findByClienteId(Long clienteId);
 
-	List<Pedido> findByColorFlores(String colorFlores);
-
 	List<Pedido> findByFechaEntrega(LocalDate fechaEntrega);
 
 	List<Pedido> findByFechaEntregaBetween(LocalDate inicio, LocalDate finExclusivo);

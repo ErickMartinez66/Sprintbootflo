@@ -1,6 +1,7 @@
 ﻿package com.example.sprintboot.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,10 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.sprintboot.dto.AccesorioDTO;
 import com.example.sprintboot.dto.ClienteDTO;
 import com.example.sprintboot.dto.CostoCDTO;
+import com.example.sprintboot.dto.DetalleColorDTO;
 import com.example.sprintboot.dto.PedidoDTO;
 import com.example.sprintboot.entity.Accesorio;
 import com.example.sprintboot.entity.Cliente;
 import com.example.sprintboot.entity.CostoC;
+import com.example.sprintboot.entity.DetalleColor;
 import com.example.sprintboot.entity.Pedido;
 import com.example.sprintboot.repository.AccesorioRepository;
 import com.example.sprintboot.repository.ClienteRepository;
@@ -46,6 +49,7 @@ public class PedidoService {
     public PedidoDTO crear(PedidoDTO dto) {
         Pedido pedido = new Pedido();
         aplicarCampos(pedido, dto);
+        pedido.setEstado(Pedido.ESTADO_PENDIENTE);
 
         if (dto.getCliente() != null) {
             pedido.setCliente(resolverCliente(dto.getCliente()));
@@ -108,6 +112,21 @@ public class PedidoService {
         return convertirADto(guardado);
     }
 
+    public PedidoDTO actualizarEstado(Long id, String estado) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id " + id));
+        String normalizado = estado == null ? "" : estado.trim().toLowerCase();
+        if (!Pedido.ESTADO_PENDIENTE.equals(normalizado) && !Pedido.ESTADO_ENTREGADO.equals(normalizado)) {
+            throw new IllegalArgumentException(
+                    "Estado inválido: '" + estado + "'. Usa '" + Pedido.ESTADO_PENDIENTE + "' o '"
+                            + Pedido.ESTADO_ENTREGADO + "'.");
+        }
+        pedido.setEstado(normalizado);
+        Pedido guardado = pedidoRepository.save(pedido);
+        mesService.calcularPorFecha(guardado.getFechaEntrega());
+        return convertirADto(guardado);
+    }
+
     @Transactional
     public void eliminar(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
@@ -123,7 +142,9 @@ public class PedidoService {
     }
 
     public List<PedidoDTO> listarPorColor(String color) {
-        return pedidoRepository.findByColorFlores(color).stream()
+        return pedidoRepository.findAll().stream()
+                .filter(p -> p.getColores() != null && p.getColores().stream()
+                        .anyMatch(d -> color != null && color.equalsIgnoreCase(d.getColor())))
                 .map(this::convertirADto)
                 .toList();
     }
@@ -165,7 +186,7 @@ public class PedidoService {
     private void aplicarCampos(Pedido pedido, PedidoDTO dto) {
         pedido.setPrecioVenta(dto.getPrecioVenta());
         pedido.setCantidadFlores(dto.getCantidadFlores());
-        pedido.setColorFlores(dto.getColorFlores());
+        pedido.setColores(validarColores(dto.getColores(), dto.getCantidadFlores()));
         pedido.setFechaEntrega(dto.getFechaEntrega());
 
         Set<Accesorio> accesorios = new HashSet<>();
@@ -180,6 +201,45 @@ public class PedidoService {
         }
         pedido.setAccesorios(accesorios);
         calcularInversionYGanancia(pedido);
+    }
+
+    private List<DetalleColor> validarColores(List<DetalleColorDTO> colores, Integer cantidadFlores) {
+        if (colores == null || colores.isEmpty()) {
+            throw new IllegalArgumentException("Debes elegir al menos un color para el pedido.");
+        }
+
+        List<DetalleColor> detalle = new ArrayList<>();
+        Set<String> vistos = new HashSet<>();
+        int suma = 0;
+
+        for (DetalleColorDTO item : colores) {
+            if (item == null) {
+                throw new IllegalArgumentException("Detalle de color inválido.");
+            }
+            String color = item.getColor() == null ? "" : item.getColor().trim();
+            if (color.isEmpty()) {
+                throw new IllegalArgumentException("Cada color debe tener un nombre.");
+            }
+            if (item.getCantidad() == null || item.getCantidad() < 1) {
+                throw new IllegalArgumentException(
+                        "La cantidad de flores del color '" + color + "' debe ser al menos 1.");
+            }
+            if (!vistos.add(color.toLowerCase())) {
+                throw new IllegalArgumentException("El color '" + color + "' está repetido.");
+            }
+            suma += item.getCantidad();
+            detalle.add(new DetalleColor(item.getCantidad(), color));
+        }
+
+        if (cantidadFlores == null) {
+            throw new IllegalArgumentException("La cantidad total de flores es obligatoria.");
+        }
+        if (suma != cantidadFlores) {
+            throw new IllegalArgumentException(
+                    "La suma de flores por color (" + suma + ") debe ser igual a la cantidad total de flores ("
+                            + cantidadFlores + ").");
+        }
+        return detalle;
     }
 
     private void calcularInversionYGanancia(Pedido pedido) {
@@ -215,8 +275,14 @@ public class PedidoService {
         dto.setPrecioInversion(p.getPrecioInversion());
         dto.setPrecioGanancia(p.getPrecioGanancia());
         dto.setCantidadFlores(p.getCantidadFlores());
-        dto.setColorFlores(p.getColorFlores());
+
+        if (p.getColores() != null) {
+            dto.setColores(p.getColores().stream()
+                    .map(d -> new DetalleColorDTO(d.getCantidad(), d.getColor()))
+                    .collect(Collectors.toList()));
+        }
         dto.setFechaEntrega(p.getFechaEntrega());
+        dto.setEstado(p.getEstado());
 
         if (p.getAccesorios() != null) {
             List<AccesorioDTO> lista = p.getAccesorios().stream()

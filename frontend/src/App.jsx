@@ -7,25 +7,26 @@ import FormularioPedido from './components/FormularioPedido.jsx';
 import Footer from './components/Footer.jsx';
 import AdminLayout from './admin/AdminLayout.jsx';
 import ArreglosPage from './admin/ArreglosPage.jsx';
+import LoginPage from './admin/LoginPage.jsx';
 import MesesPage from './admin/MesesPage.jsx';
 import MesDetallePage from './admin/MesDetallePage.jsx';
+import RequireAuth from './admin/RequireAuth.jsx';
 import ViajesPage from './admin/ViajesPage.jsx';
 import ViajeDetallePage from './admin/ViajeDetallePage.jsx';
-import AccesoriosPage from './admin/AccesoriosPage.jsx';
 import InversionPage from './admin/InversionPage.jsx';
-import { listarArreglosActivos } from './api.js';
+import { obtenerFormConfig } from './data/formConfig.js';
 
 function Tienda() {
   const [config, setConfig] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
-  const cargarConfig = useCallback(async () => {
+  const cargarConfig = useCallback(() => {
     try {
       setCargando(true);
       setError('');
-      const activos = await listarArreglosActivos();
-      setConfig(activos[0] ?? null);
+      const cfg = obtenerFormConfig();
+      setConfig(cfg);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -35,6 +36,28 @@ function Tienda() {
 
   useEffect(() => {
     cargarConfig();
+  }, [cargarConfig]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const recargar = () => {
+      cargarConfig();
+    };
+
+    window.addEventListener('focus', recargar);
+    window.addEventListener('adybloom:config-actualizada', recargar);
+    document.addEventListener('visibilitychange', recargar);
+    window.addEventListener('pageshow', recargar);
+    window.addEventListener('storage', recargar);
+
+    return () => {
+      window.removeEventListener('focus', recargar);
+      window.removeEventListener('adybloom:config-actualizada', recargar);
+      document.removeEventListener('visibilitychange', recargar);
+      window.removeEventListener('pageshow', recargar);
+      window.removeEventListener('storage', recargar);
+    };
   }, [cargarConfig]);
 
   return (
@@ -54,14 +77,21 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Tienda />} />
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route path="/admin/login" element={<LoginPage />} />
+      <Route
+        path="/admin"
+        element={
+          <RequireAuth>
+            <AdminLayout />
+          </RequireAuth>
+        }
+      >
         <Route index element={<Navigate to="arreglos" replace />} />
         <Route path="arreglos" element={<ArreglosPage />} />
         <Route path="meses" element={<MesesPage />} />
         <Route path="meses/:id" element={<MesDetallePage />} />
         <Route path="viajes" element={<ViajesPage />} />
         <Route path="viajes/:id" element={<ViajeDetallePage />} />
-        <Route path="accesorios" element={<AccesoriosPage />} />
         <Route path="inversion" element={<InversionPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

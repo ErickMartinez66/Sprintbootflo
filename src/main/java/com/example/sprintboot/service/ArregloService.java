@@ -34,7 +34,7 @@ public class ArregloService {
     }
 
     public List<ArregloDTO> listar() {
-        return arregloRepository.findAll(Sort.by("orden", "id")).stream()
+        return arregloRepository.findAllByOrderByOrdenAscIdAsc().stream()
                 .map(this::convertirADto)
                 .toList();
     }
@@ -52,12 +52,16 @@ public class ArregloService {
     public ArregloDTO crear(ArregloDTO dto) {
         Arreglo arreglo = new Arreglo();
         aplicarCampos(arreglo, dto);
+        arreglo.setActivo(Boolean.TRUE);
+        arregloRepository.desactivarTodos();
         return convertirADto(arregloRepository.save(arreglo));
     }
 
     public ArregloDTO actualizar(Long id, ArregloDTO dto) {
         Arreglo arreglo = buscar(id);
         aplicarCampos(arreglo, dto);
+        arreglo.setActivo(Boolean.TRUE);
+        arregloRepository.desactivarOtros(id);
         return convertirADto(arregloRepository.save(arreglo));
     }
 

@@ -1,10 +1,16 @@
 ﻿package com.example.sprintboot.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.example.sprintboot.config.ColoresConverter;
+
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +29,10 @@ public class Pedido {
 
     public static final double COSTO_POR_FLOR = 250.0;
 
+    public static final String ESTADO_PENDIENTE = "pendiente";
+
+    public static final String ESTADO_ENTREGADO = "entregado";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,9 +45,13 @@ public class Pedido {
 
     private Integer cantidadFlores;
 
-    private String colorFlores;
+    @Convert(converter = ColoresConverter.class)
+    @Column(name = "colores")
+    private List<DetalleColor> colores = new ArrayList<>();
 
     private LocalDate fechaEntrega;
+
+    private String estado;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
     @JoinTable(name = "pedido_accesorio",
@@ -56,13 +70,13 @@ public class Pedido {
     }
 
     public Pedido(Long id, Double precioVenta, Double precioInversion, Double precioGanancia, Integer cantidadFlores,
-            String colorFlores, LocalDate fechaEntrega, Set<Accesorio> accesorios, Cliente cliente, CostoC costoC) {
+            List<DetalleColor> colores, LocalDate fechaEntrega, Set<Accesorio> accesorios, Cliente cliente, CostoC costoC) {
         this.id = id;
         this.precioVenta = precioVenta;
         this.precioInversion = precioInversion;
         this.precioGanancia = precioGanancia;
         this.cantidadFlores = cantidadFlores;
-        this.colorFlores = colorFlores;
+        this.colores = colores != null ? colores : new ArrayList<>();
         this.fechaEntrega = fechaEntrega;
         this.accesorios = accesorios != null ? accesorios : new HashSet<>();
         this.cliente = cliente;
@@ -109,12 +123,12 @@ public class Pedido {
         this.cantidadFlores = cantidadFlores;
     }
 
-    public String getColorFlores() {
-        return colorFlores;
+    public List<DetalleColor> getColores() {
+        return colores;
     }
 
-    public void setColorFlores(String colorFlores) {
-        this.colorFlores = colorFlores;
+    public void setColores(List<DetalleColor> colores) {
+        this.colores = colores != null ? colores : new ArrayList<>();
     }
 
     public LocalDate getFechaEntrega() {
@@ -123,6 +137,14 @@ public class Pedido {
 
     public void setFechaEntrega(LocalDate fechaEntrega) {
         this.fechaEntrega = fechaEntrega;
+    }
+
+    public String getEstado() {
+        return estado == null ? ESTADO_ENTREGADO : estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public Set<Accesorio> getAccesorios() {

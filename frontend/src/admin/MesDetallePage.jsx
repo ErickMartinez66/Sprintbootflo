@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import {
+  actualizarEstadoPedido,
   eliminarPedido,
   formatearFecha,
   formatearPrecio,
@@ -26,6 +27,7 @@ function MesDetallePage() {
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
+  const [cambiandoEstadoId, setCambiandoEstadoId] = useState(null);
 
   const cargar = useCallback(async () => {
     const [info, lista] = await Promise.all([obtenerMes(id), listarPedidosDelMes(id)]);
@@ -73,6 +75,20 @@ function MesDetallePage() {
     }
   };
 
+  const alternarEstado = async (pedido) => {
+    const nuevoEstado = pedido.estado === 'entregado' ? 'pendiente' : 'entregado';
+    setError('');
+    setCambiandoEstadoId(pedido.id);
+    try {
+      await actualizarEstadoPedido(pedido.id, nuevoEstado);
+      await cargar();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCambiandoEstadoId(null);
+    }
+  };
+
   return (
     <div className="admin-panel">
       <Link className="admin-volver-inline" to="/admin/meses">
@@ -111,27 +127,56 @@ function MesDetallePage() {
                 <table className="admin-tabla" data-aos="fade-up" data-aos-delay="120">
                   <thead>
                     <tr>
+                      <th>ID</th>
                       <th>Fecha entrega</th>
                       <th>Flores</th>
                       <th>Color</th>
                       <th>Venta</th>
-                      <th>Inversión</th>
+                      <th>Inversi��n</th>
                       <th>Ganancia</th>
                       <th>Cliente</th>
+                      <th>Estado</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {pedidos.map((pedido) => (
                       <tr key={pedido.id}>
+                        <td>{pedido.id}</td>
                         <td>{formatearFecha(pedido.fechaEntrega)}</td>
                         <td>{pedido.cantidadFlores}</td>
-                        <td>{pedido.colorFlores}</td>
+                        <td>
+                          {pedido.colores?.length
+                            ? pedido.colores
+                                .map((c) => `${c.color}: ${c.cantidad}`)
+                                .join(', ')
+                            : '—'}
+                        </td>
                         <td>{formatearPrecio(pedido.precioVenta)}</td>
                         <td>{formatearPrecio(pedido.precioInversion)}</td>
                         <td className="admin-dorado">{formatearPrecio(pedido.precioGanancia)}</td>
                         <td>{pedido.cliente?.nombre || '—'}</td>
+                        <td>
+                          <span
+                            className={
+                              pedido.estado === 'entregado'
+                                ? 'admin-estado-activo'
+                                : 'admin-estado-pendiente'
+                            }
+                          >
+                            {pedido.estado === 'entregado' ? 'Entregado' : 'Pendiente'}
+                          </span>
+                        </td>
                         <td className="admin-acciones">
+                          <button
+                            className="btn btn-secundario admin-btn-xs"
+                            onClick={() => alternarEstado(pedido)}
+                            disabled={cambiandoEstadoId === pedido.id}
+                          >
+                            {pedido.estado === 'entregado'
+                              ? 'Marcar pendiente'
+                              : 'Marcar entregado'}
+                          </button>
                           <button
                             className="btn admin-btn-xs admin-btn-peligro"
                             onClick={() => eliminar(pedido)}

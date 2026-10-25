@@ -58,18 +58,7 @@ function Hero() {
         </div>
         <div className="hero-flor" data-aos="fade-up" data-aos-delay="120" aria-hidden="true">
           <div className="hero-flor-circulo">
-            <span className="hero-flor-icono">
-              <Flower size={46} aria-hidden="true" />
-            </span>
-            <span className="petalo p1">
-              <Sparkles size={20} />
-            </span>
-            <span className="petalo p2">
-              <Flower size={20} />
-            </span>
-            <span className="petalo p3">
-              <Flower size={20} />
-            </span>
+            <img src="/logo.jpg" alt="Ady Bloom" className="hero-flor-logo" />
           </div>
         </div>
       </div>

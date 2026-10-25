@@ -46,8 +46,11 @@ public class MesService {
 		LocalDate inicio = LocalDate.of(anio, mes, 1);
 		LocalDate finExclusivo = inicio.plusMonths(1);
 		List<Pedido> pedidos = pedidoRepository.findByFechaEntregaBetween(inicio, finExclusivo);
+		List<Pedido> entregados = pedidos.stream()
+				.filter(p -> Pedido.ESTADO_ENTREGADO.equals(p.getEstado()))
+				.toList();
 
-		double ganancia = pedidos.stream()
+		double ganancia = entregados.stream()
 				.filter(p -> p.getPrecioGanancia() != null)
 				.mapToDouble(Pedido::getPrecioGanancia)
 				.sum();
@@ -62,7 +65,7 @@ public class MesService {
 		mesEntity.setAnio(anio);
 		mesEntity.setMes(mes);
 		mesEntity.setGananciaTotal(ganancia);
-		mesEntity.setCantidadPedidos(pedidos.size());
+		mesEntity.setCantidadPedidos(entregados.size());
 		return convertirADto(mesRepository.save(mesEntity));
 	}
 
@@ -90,9 +93,11 @@ public class MesService {
 				mes.setCantidadPedidos(0);
 				meses.put(id, mes);
 			}
-			mes.setCantidadPedidos(mes.getCantidadPedidos() + 1);
-			if (p.getPrecioGanancia() != null) {
-				mes.setGananciaTotal(mes.getGananciaTotal() + p.getPrecioGanancia());
+			if (Pedido.ESTADO_ENTREGADO.equals(p.getEstado())) {
+				mes.setCantidadPedidos(mes.getCantidadPedidos() + 1);
+				if (p.getPrecioGanancia() != null) {
+					mes.setGananciaTotal(mes.getGananciaTotal() + p.getPrecioGanancia());
+				}
 			}
 		}
 

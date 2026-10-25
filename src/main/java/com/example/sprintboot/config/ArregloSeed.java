@@ -52,13 +52,13 @@ public class ArregloSeed implements ApplicationRunner {
                 "Tulipanes frescos en tonos pastel con tarjeta personalizada.", 95000.0, 18, "pastel", set(tarjeta),
                 "\ud83d\udca5", "linear-gradient(160deg, #fdecd7, #f0cfa6)", null, true, 2);
         Arreglo bouquet = new Arreglo(null, "Bouquet Eternidad",
-                "Arreglo eterno que combina flores rosadas y blancas.", 135000.0, 30, "blanco/rosa", set(tarjeta, mono),
+                "Arreglo eterno que combina flores rosadas y blancas.", 135000.0, 30, "blanco", set(tarjeta, mono),
                 "\ud83d\udca5", "linear-gradient(160deg, #f8ecd9, #e7c584)", null, true, 3);
         Arreglo atardecer = new Arreglo(null, "Atardecer Dorado",
                 "Mezcla cálida de girasoles y flores silvestres soleadas.", 88000.0, 16, "amarillo", set(sobres),
                 "\ud83d\udca5", "linear-gradient(160deg, #fff3d6, #f4c97e)", null, true, 4);
         Arreglo jardin = new Arreglo(null, "Jardín de Primavera",
-                "Caja de mezcla floral vibrante, perfecta para celebrar.", 150000.0, 36, "multicolor", set(caja, mono),
+                "Caja de mezcla floral vibrante, perfecta para celebrar.", 150000.0, 36, "rosa", set(caja, mono),
                 "\ud83d\udca5", "linear-gradient(160deg, #faead6, #efbe8f)", null, true, 5);
         Arreglo susurro = new Arreglo(null, "Susurro Elegante",
                 "Arreglo sobrio de orquídeas y hojas verdes de impacto.", 125000.0, 12, "blanco", set(tarjeta),

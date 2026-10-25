@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.sprintboot.dto.ClienteDTO;
+import com.example.sprintboot.dto.EstadoPedidoDTO;
 import com.example.sprintboot.dto.PedidoDTO;
 import com.example.sprintboot.service.PedidoService;
 
@@ -74,6 +76,17 @@ public class PedidoController {
 	@ApiResponse(responseCode = "404", description = "Pedido no encontrado")
 	public PedidoDTO actualizar(@PathVariable Long id, @RequestBody PedidoDTO dto) {
 		return pedidoService.actualizar(id, dto);
+	}
+
+	@PatchMapping("/{id}/estado")
+	@Operation(summary = "Cambiar estado del pedido",
+			description = "Cambia manualmente el estado de un pedido entre 'pendiente' y 'entregado' y recalcula los totales del mes.")
+	@ApiResponse(responseCode = "200", description = "Estado actualizado",
+			content = @Content(mediaType = "application/json", schema = @Schema(implementation = PedidoDTO.class)))
+	@ApiResponse(responseCode = "400", description = "Estado inválido")
+	@ApiResponse(responseCode = "404", description = "Pedido no encontrado")
+	public PedidoDTO actualizarEstado(@PathVariable Long id, @RequestBody EstadoPedidoDTO dto) {
+		return pedidoService.actualizarEstado(id, dto.getEstado());
 	}
 
 	@DeleteMapping("/{id}")

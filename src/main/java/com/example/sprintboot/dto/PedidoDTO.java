@@ -21,14 +21,17 @@ public class PedidoDTO {
     @Schema(description = "Ganancia del pedido (precio de venta - inversión) en pesos", example = "430000.00")
     private Double precioGanancia;
 
-    @Schema(description = "Cantidad de flores del arreglo", example = "24")
+    @Schema(description = "Cantidad total de flores del arreglo", example = "24")
     private Integer cantidadFlores;
 
-    @Schema(description = "Color predominante de las flores", example = "rosa")
-    private String colorFlores;
+    @Schema(description = "Cantidades de flores por cada color elegido")
+    private List<DetalleColorDTO> colores = new ArrayList<>();
 
     @Schema(description = "Fecha de entrega en formato ISO-8601", example = "2026-10-01")
     private LocalDate fechaEntrega;
+
+    @Schema(description = "Estado del pedido", allowableValues = { "pendiente", "entregado" }, example = "pendiente")
+    private String estado;
 
     @Schema(description = "Accesorios incluidos")
     private List<AccesorioDTO> accesorios = new ArrayList<>();
@@ -43,13 +46,13 @@ public class PedidoDTO {
     }
 
     public PedidoDTO(Long id, Double precioVenta, Double precioInversion, Double precioGanancia, Integer cantidadFlores,
-            String colorFlores, LocalDate fechaEntrega, List<AccesorioDTO> accesorios, ClienteDTO cliente, CostoCDTO costoC) {
+            List<DetalleColorDTO> colores, LocalDate fechaEntrega, List<AccesorioDTO> accesorios, ClienteDTO cliente, CostoCDTO costoC) {
         this.id = id;
         this.precioVenta = precioVenta;
         this.precioInversion = precioInversion;
         this.precioGanancia = precioGanancia;
         this.cantidadFlores = cantidadFlores;
-        this.colorFlores = colorFlores;
+        this.colores = colores != null ? colores : new ArrayList<>();
         this.fechaEntrega = fechaEntrega;
         this.accesorios = accesorios != null ? accesorios : new ArrayList<>();
         this.cliente = cliente;
@@ -96,12 +99,12 @@ public class PedidoDTO {
         this.cantidadFlores = cantidadFlores;
     }
 
-    public String getColorFlores() {
-        return colorFlores;
+    public List<DetalleColorDTO> getColores() {
+        return colores;
     }
 
-    public void setColorFlores(String colorFlores) {
-        this.colorFlores = colorFlores;
+    public void setColores(List<DetalleColorDTO> colores) {
+        this.colores = colores != null ? colores : new ArrayList<>();
     }
 
     public LocalDate getFechaEntrega() {
@@ -110,6 +113,14 @@ public class PedidoDTO {
 
     public void setFechaEntrega(LocalDate fechaEntrega) {
         this.fechaEntrega = fechaEntrega;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public List<AccesorioDTO> getAccesorios() {
