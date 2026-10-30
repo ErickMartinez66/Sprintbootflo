@@ -17,7 +17,7 @@ public class MesDTO {
 	@Schema(description = "Suma de las ganancias de los pedidos entregados en el mes", example = "8500000.00")
 	private Double gananciaTotal;
 
-	@Schema(description = "Cantidad de pedidos entregados en el mes", example = "12")
+	@Schema(description = "Cantidad total de pedidos del mes (pendientes y entregados)", example = "12")
 	private Integer cantidadPedidos;
 
 	public MesDTO() {

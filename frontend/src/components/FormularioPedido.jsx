@@ -6,6 +6,7 @@ import {
   listarAccesorios,
   listarColoresActivos,
 } from '../api.js';
+import useAosRefreshOnMount from '../hooks/useAosRefreshOnMount.js';
 import IconoArreglo from './IconoArreglo.jsx';
 
 function hoyISO() {
@@ -391,6 +392,7 @@ function Formulario({ config, colores }) {
 }
 
 function FormularioPedido({ config, cargando, error }) {
+  useAosRefreshOnMount();
   const [colores, setColores] = useState(null);
 
   useEffect(() => {
@@ -413,8 +415,7 @@ function FormularioPedido({ config, cargando, error }) {
   const listo = !cargando && !error && colores !== null && config;
 
   return (
-    <section id="pedido" className="pedido">
-      <div className="container">
+    <div className="container">
         <span className="eyebrow" data-aos="fade-up">
           Pedido
         </span>
@@ -455,8 +456,7 @@ function FormularioPedido({ config, cargando, error }) {
             />
           </div>
         )}
-      </div>
-    </section>
+    </div>
   );
 }
 

@@ -111,8 +111,8 @@ function MesDetallePage() {
                   <strong className="admin-dorado">{formatearPrecio(mes.gananciaTotal)}</strong>
                 </div>
                 <div className="admin-tarjeta">
-                  <small>Pedidos entregados</small>
-                  <strong>{mes.cantidadPedidos}</strong>
+                  <small>Total de pedidos</small>
+                  <strong>{pedidos.length}</strong>
                 </div>
               </div>
             </div>

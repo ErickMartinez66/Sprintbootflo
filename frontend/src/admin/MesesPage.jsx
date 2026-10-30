@@ -53,7 +53,7 @@ function MesesPage() {
         <div>
           <h1 className="admin-titulo">Información por meses</h1>
           <p className="admin-subtitulo">
-            Ganancia total y cantidad de pedidos entregados por mes.
+            Ganancia de pedidos entregados y total de pedidos por mes.
           </p>
         </div>
         <button
@@ -74,7 +74,7 @@ function MesesPage() {
                 <th>ID</th>
                 <th>Mes</th>
                 <th>Ganancia total</th>
-                <th>Pedidos</th>
+                <th>Pedidos totales</th>
                 <th></th>
               </tr>
             </thead>

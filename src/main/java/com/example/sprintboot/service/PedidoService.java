@@ -33,23 +33,27 @@ public class PedidoService {
     private final CostoCRepository costoCRepository;
     private final MesService mesService;
     private final AccesorioRepository accesorioRepository;
+    private final InversionTotalService inversionTotalService;
 
     public PedidoService(PedidoRepository pedidoRepository,
             ClienteRepository clienteRepository,
             CostoCRepository costoCRepository,
             MesService mesService,
-            AccesorioRepository accesorioRepository) {
+            AccesorioRepository accesorioRepository,
+            InversionTotalService inversionTotalService) {
         this.pedidoRepository = pedidoRepository;
         this.clienteRepository = clienteRepository;
         this.costoCRepository = costoCRepository;
         this.mesService = mesService;
         this.accesorioRepository = accesorioRepository;
+        this.inversionTotalService = inversionTotalService;
     }
 
     public PedidoDTO crear(PedidoDTO dto) {
         Pedido pedido = new Pedido();
         aplicarCampos(pedido, dto);
         pedido.setEstado(Pedido.ESTADO_PENDIENTE);
+        pedido.setInversionFijaAplicada(false);
 
         if (dto.getCliente() != null) {
             pedido.setCliente(resolverCliente(dto.getCliente()));
@@ -86,10 +90,14 @@ public class PedidoService {
         return convertirADto(pedidoRepository.save(pedido));
     }
 
+    @Transactional
     public PedidoDTO actualizar(Long id, PedidoDTO dto) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id " + id));
         LocalDate fechaEntregaAnterior = pedido.getFechaEntrega();
+        Double inversionAnterior = pedido.getPrecioInversion();
+        boolean estabaEntregado = Pedido.ESTADO_ENTREGADO.equals(pedido.getEstado());
+        boolean inversionFijaAplicada = Boolean.TRUE.equals(pedido.getInversionFijaAplicada());
         aplicarCampos(pedido, dto);
 
         if (dto.getCliente() != null) {
@@ -107,11 +115,20 @@ public class PedidoService {
             costoCRepository.save(costoC);
         }
         Pedido guardado = pedidoRepository.save(pedido);
+        if (estabaEntregado && inversionFijaAplicada) {
+            double diferencia = valorSeguro(guardado.getPrecioInversion()) - valorSeguro(inversionAnterior);
+            if (diferencia > 0) {
+                inversionTotalService.sumar(diferencia);
+            } else if (diferencia < 0) {
+                inversionTotalService.restar(-diferencia);
+            }
+        }
         mesService.calcularPorFecha(fechaEntregaAnterior);
         mesService.calcularPorFecha(guardado.getFechaEntrega());
         return convertirADto(guardado);
     }
 
+    @Transactional
     public PedidoDTO actualizarEstado(Long id, String estado) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id " + id));
@@ -121,7 +138,21 @@ public class PedidoService {
                     "Estado inválido: '" + estado + "'. Usa '" + Pedido.ESTADO_PENDIENTE + "' o '"
                             + Pedido.ESTADO_ENTREGADO + "'.");
         }
+
+        boolean estabaEntregado = Pedido.ESTADO_ENTREGADO.equals(pedido.getEstado());
+        boolean quedaEntregado = Pedido.ESTADO_ENTREGADO.equals(normalizado);
         pedido.setEstado(normalizado);
+
+        if (!estabaEntregado && quedaEntregado) {
+            inversionTotalService.sumar(pedido.getPrecioInversion());
+            pedido.setInversionFijaAplicada(true);
+        } else if (estabaEntregado && !quedaEntregado) {
+            if (Boolean.TRUE.equals(pedido.getInversionFijaAplicada())) {
+                inversionTotalService.restar(pedido.getPrecioInversion());
+            }
+            pedido.setInversionFijaAplicada(false);
+        }
+
         Pedido guardado = pedidoRepository.save(pedido);
         mesService.calcularPorFecha(guardado.getFechaEntrega());
         return convertirADto(guardado);
@@ -131,6 +162,10 @@ public class PedidoService {
     public void eliminar(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id " + id));
+        if (Pedido.ESTADO_ENTREGADO.equals(pedido.getEstado())
+                && Boolean.TRUE.equals(pedido.getInversionFijaAplicada())) {
+            inversionTotalService.restar(pedido.getPrecioInversion());
+        }
         pedidoRepository.delete(pedido);
         mesService.calcularPorFecha(pedido.getFechaEntrega());
     }
@@ -163,7 +198,7 @@ public class PedidoService {
         }
         LocalDate inicio = LocalDate.of(anio, mes, 1);
         LocalDate finExclusivo = inicio.plusMonths(1);
-        return pedidoRepository.findByFechaEntregaBetween(inicio, finExclusivo).stream()
+        return pedidoRepository.findByFechaEntregaGreaterThanEqualAndFechaEntregaLessThan(inicio, finExclusivo).stream()
                 .map(this::convertirADto)
                 .toList();
     }
@@ -255,6 +290,10 @@ public class PedidoService {
         } else {
             pedido.setPrecioGanancia(null);
         }
+    }
+
+    private double valorSeguro(Double valor) {
+        return valor == null ? 0.0 : valor;
     }
 
     private void aplicarCostoC(CostoC costoC, CostoCDTO dto) {

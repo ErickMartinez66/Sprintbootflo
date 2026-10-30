@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sprintboot.dto.MesDTO;
 import com.example.sprintboot.entity.Mes;
@@ -25,15 +26,14 @@ public class MesService {
 	}
 
 	public List<MesDTO> listar() {
+		sincronizar();
 		return mesRepository.findAllByOrderByAnioDescMesDesc().stream()
 				.map(this::convertirADto)
 				.toList();
 	}
 
 	public MesDTO obtenerPorId(Long mesId) {
-		return mesRepository.findById(mesId)
-				.map(this::convertirADto)
-				.orElseGet(() -> calcular(mesId));
+		return calcular(mesId);
 	}
 
 	public MesDTO calcular(Long mesId) {
@@ -45,12 +45,11 @@ public class MesService {
 
 		LocalDate inicio = LocalDate.of(anio, mes, 1);
 		LocalDate finExclusivo = inicio.plusMonths(1);
-		List<Pedido> pedidos = pedidoRepository.findByFechaEntregaBetween(inicio, finExclusivo);
-		List<Pedido> entregados = pedidos.stream()
-				.filter(p -> Pedido.ESTADO_ENTREGADO.equals(p.getEstado()))
-				.toList();
+		List<Pedido> pedidos = pedidoRepository
+				.findByFechaEntregaGreaterThanEqualAndFechaEntregaLessThan(inicio, finExclusivo);
 
-		double ganancia = entregados.stream()
+		double ganancia = pedidos.stream()
+				.filter(p -> Pedido.ESTADO_ENTREGADO.equals(p.getEstado()))
 				.filter(p -> p.getPrecioGanancia() != null)
 				.mapToDouble(Pedido::getPrecioGanancia)
 				.sum();
@@ -65,7 +64,7 @@ public class MesService {
 		mesEntity.setAnio(anio);
 		mesEntity.setMes(mes);
 		mesEntity.setGananciaTotal(ganancia);
-		mesEntity.setCantidadPedidos(entregados.size());
+		mesEntity.setCantidadPedidos(pedidos.size());
 		return convertirADto(mesRepository.save(mesEntity));
 	}
 
@@ -76,6 +75,7 @@ public class MesService {
 		return calcular(fecha.getYear() * 100L + fecha.getMonthValue());
 	}
 
+	@Transactional
 	public void sincronizar() {
 		Map<Long, Mes> meses = new TreeMap<>();
 		for (Pedido p : pedidoRepository.findAll()) {
@@ -93,11 +93,9 @@ public class MesService {
 				mes.setCantidadPedidos(0);
 				meses.put(id, mes);
 			}
-			if (Pedido.ESTADO_ENTREGADO.equals(p.getEstado())) {
-				mes.setCantidadPedidos(mes.getCantidadPedidos() + 1);
-				if (p.getPrecioGanancia() != null) {
-					mes.setGananciaTotal(mes.getGananciaTotal() + p.getPrecioGanancia());
-				}
+			mes.setCantidadPedidos(mes.getCantidadPedidos() + 1);
+			if (Pedido.ESTADO_ENTREGADO.equals(p.getEstado()) && p.getPrecioGanancia() != null) {
+				mes.setGananciaTotal(mes.getGananciaTotal() + p.getPrecioGanancia());
 			}
 		}
 

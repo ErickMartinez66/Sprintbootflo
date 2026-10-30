@@ -5,7 +5,6 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import App from './App.jsx';
 import './index.css';
-import './admin/admin.css';
 
 let aosIniciado = false;
 

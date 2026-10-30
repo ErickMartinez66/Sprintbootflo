@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Flower } from 'lucide-react';
 import { guardarToken, estaAutenticado } from '../auth.js';
 import { loginAdmin } from '../api.js';
+import useAosRefreshOnMount from '../hooks/useAosRefreshOnMount.js';
+import './admin.css';
 
 function LoginPage() {
+  useAosRefreshOnMount();
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');

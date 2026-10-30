@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/inversion-total")
-	@Tag(name = "Inversión total", description = "Registro único global de inversión en pesos, en dólares y de la inversión fija editable")
+	@Tag(name = "Inversión total", description = "Registro único global de inversión en pesos, en dólares y de la inversión fija editable; los pedidos entregados suman su inversión y los viajes la descuentan")
 public class InversionTotalController {
 
 	private final InversionTotalService inversionTotalService;

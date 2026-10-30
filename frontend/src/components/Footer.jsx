@@ -1,8 +1,11 @@
 import { Phone, Mail, MapPin, Flower, Camera, MessageCircle, Globe } from 'lucide-react';
+import useAosRefreshOnMount from '../hooks/useAosRefreshOnMount.js';
 
 function Footer() {
+  useAosRefreshOnMount();
+
   return (
-    <footer id="contacto" className="footer">
+    <>
       <div className="container footer-inner" data-aos="fade-up">
         <div>
           <p className="footer-marca">
@@ -44,19 +47,19 @@ function Footer() {
             <span className="footer-contacto-icono">
               <Phone size={16} aria-hidden="true" />
             </span>
-            310-555-1234
+             54912292
           </div>
           <div className="footer-contacto-item">
             <span className="footer-contacto-icono">
               <Mail size={16} aria-hidden="true" />
             </span>
-            hola@adybloom.com
+            em9775372@gmail.com
           </div>
           <div className="footer-contacto-item">
             <span className="footer-contacto-icono">
               <MapPin size={16} aria-hidden="true" />
             </span>
-            Centro de flores, Bogotá
+            Sancti Spíritus ,Cuba
           </div>
         </div>
 
@@ -74,7 +77,7 @@ function Footer() {
         © {new Date().getFullYear()} <strong>Ady Bloom</strong> · Todos los
         derechos reservados.
       </div>
-    </footer>
+    </>
   );
 }
 

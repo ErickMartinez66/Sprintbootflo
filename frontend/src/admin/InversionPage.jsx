@@ -63,8 +63,9 @@ function InversionPage() {
         <div>
           <h1 className="admin-titulo">Inversión fija</h1>
           <p className="admin-subtitulo">
-            Edita manualmente el saldo disponible. Acepta valores negativos y se
-            descuenta automáticamente con cada viaje que crees.
+            Edita manualmente el saldo disponible. Se descuenta con cada viaje y
+            suma la inversión de los pedidos al marcarlos como entregados (se
+            resta si vuelven a pendiente).
           </p>
         </div>
       </div>

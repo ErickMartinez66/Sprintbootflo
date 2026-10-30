@@ -29,12 +29,20 @@ public class InversionTotalService {
 		return convertirADto(inversionTotalRepository.save(inversionTotal));
 	}
 
-	public void descontar(Double monto) {
+	public void sumar(Double monto) {
+		ajustarInversionFija(valorSeguro(monto));
+	}
+
+	public void restar(Double monto) {
 		ajustarInversionFija(-valorSeguro(monto));
 	}
 
+	public void descontar(Double monto) {
+		restar(monto);
+	}
+
 	public void devolver(Double monto) {
-		ajustarInversionFija(valorSeguro(monto));
+		sumar(monto);
 	}
 
 	private void ajustarInversionFija(double delta) {

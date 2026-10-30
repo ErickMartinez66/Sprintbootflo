@@ -58,7 +58,15 @@ function Hero() {
         </div>
         <div className="hero-flor" data-aos="fade-up" data-aos-delay="120" aria-hidden="true">
           <div className="hero-flor-circulo">
-            <img src="/logo.jpg" alt="Ady Bloom" className="hero-flor-logo" />
+            <img
+              src="/logo.jpg"
+              alt="Ady Bloom"
+              className="hero-flor-logo"
+              width="1254"
+              height="1254"
+              decoding="async"
+              fetchpriority="high"
+            />
           </div>
         </div>
       </div>

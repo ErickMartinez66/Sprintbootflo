@@ -65,6 +65,59 @@ body {
   min-height: 100vh;
 }
 
+.hero,
+.galeria,
+.pedido,
+.footer {
+  scroll-margin-top: 84px;
+}
+
+.lazy-placeholder {
+  width: 100%;
+  max-width: calc(1160px - 48px);
+  margin: 0 auto;
+  border-radius: var(--radio);
+  background: linear-gradient(
+    100deg,
+    rgba(239, 229, 211, 0.35) 20%,
+    rgba(251, 248, 241, 0.9) 50%,
+    rgba(239, 229, 211, 0.35) 80%
+  );
+  background-size: 200% 100%;
+  animation: lazy-brillo 1.6s linear infinite;
+}
+
+.footer > .lazy-placeholder {
+  background: rgba(233, 195, 124, 0.08);
+  animation: none;
+  max-width: calc(1160px - 48px);
+}
+
+.ruta-cargando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: var(--fuente-cuerpo);
+  color: var(--texto-suave);
+  font-size: 1rem;
+}
+
+@keyframes lazy-brillo {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lazy-placeholder {
+    animation: none;
+  }
+}
+
 a {
   color: inherit;
   text-decoration: none;

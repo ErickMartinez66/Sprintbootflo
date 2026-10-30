@@ -70,7 +70,8 @@ public class PedidoController {
 	}
 
 	@PutMapping("/{id}")
-	@Operation(summary = "Actualizar pedido", description = "Actualiza los campos de un pedido existente.")
+	@Operation(summary = "Actualizar pedido",
+			description = "Actualiza los campos de un pedido existente. Si el pedido ya está entregado y su inversión fija fue contabilizada, ajusta el saldo por la diferencia de inversión.")
 	@ApiResponse(responseCode = "200", description = "Pedido actualizado",
 			content = @Content(mediaType = "application/json", schema = @Schema(implementation = PedidoDTO.class)))
 	@ApiResponse(responseCode = "404", description = "Pedido no encontrado")
@@ -80,7 +81,7 @@ public class PedidoController {
 
 	@PatchMapping("/{id}/estado")
 	@Operation(summary = "Cambiar estado del pedido",
-			description = "Cambia manualmente el estado de un pedido entre 'pendiente' y 'entregado' y recalcula los totales del mes.")
+			description = "Cambia manualmente el estado de un pedido entre 'pendiente' y 'entregado', recalcula los totales del mes y suma o resta su inversión al saldo de inversión fija.")
 	@ApiResponse(responseCode = "200", description = "Estado actualizado",
 			content = @Content(mediaType = "application/json", schema = @Schema(implementation = PedidoDTO.class)))
 	@ApiResponse(responseCode = "400", description = "Estado inválido")
@@ -90,7 +91,8 @@ public class PedidoController {
 	}
 
 	@DeleteMapping("/{id}")
-	@Operation(summary = "Eliminar pedido", description = "Elimina un pedido y, en cascada, su costo de creación.")
+	@Operation(summary = "Eliminar pedido",
+			description = "Elimina un pedido y, en cascada, su costo de creación. Si estaba entregado y contabilizado, descuenta su inversión del saldo de inversión fija.")
 	@ApiResponse(responseCode = "204", description = "Pedido eliminado")
 	@ApiResponse(responseCode = "404", description = "Pedido no encontrado")
 	public void eliminar(@PathVariable Long id) {

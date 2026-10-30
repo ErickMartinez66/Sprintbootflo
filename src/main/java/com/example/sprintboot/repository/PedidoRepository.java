@@ -15,5 +15,5 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
 	List<Pedido> findByFechaEntrega(LocalDate fechaEntrega);
 
-	List<Pedido> findByFechaEntregaBetween(LocalDate inicio, LocalDate finExclusivo);
+	List<Pedido> findByFechaEntregaGreaterThanEqualAndFechaEntregaLessThan(LocalDate inicio, LocalDate finExclusivo);
 }

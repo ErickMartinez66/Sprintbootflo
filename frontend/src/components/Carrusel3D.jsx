@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import GALERIA from '../data/galeria.js';
+import useAosRefreshOnMount from '../hooks/useAosRefreshOnMount.js';
 
 const TOTAL = GALERIA.length;
 const ANGULO = 42;
 
 function Carrusel3D() {
+  useAosRefreshOnMount();
   const escenaRef = useRef(null);
   const arrastre = useRef({ activo: false, inicioX: 0, inicioPos: 0, movimiento: 0 });
   const hoverRef = useRef(false);
@@ -110,8 +112,7 @@ function Carrusel3D() {
   };
 
   return (
-    <section id="galeria" className="galeria">
-      <div className="container">
+    <div className="container">
         <span className="eyebrow" data-aos="fade-up">
           Galería
         </span>
@@ -161,13 +162,13 @@ function Carrusel3D() {
                   alt={`Arreglo floral ${i + 1}`}
                   draggable={false}
                   loading="lazy"
+                  decoding="async"
                 />
               </figure>
             );
           })}
         </div>
-      </div>
-    </section>
+    </div>
   );
 }
 

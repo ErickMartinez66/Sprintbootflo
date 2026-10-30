@@ -53,6 +53,8 @@ public class Pedido {
 
     private String estado;
 
+    private Boolean inversionFijaAplicada = false;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
     @JoinTable(name = "pedido_accesorio",
             joinColumns = @JoinColumn(name = "pedido_id"),
@@ -145,6 +147,14 @@ public class Pedido {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public Boolean getInversionFijaAplicada() {
+        return inversionFijaAplicada;
+    }
+
+    public void setInversionFijaAplicada(Boolean inversionFijaAplicada) {
+        this.inversionFijaAplicada = inversionFijaAplicada;
     }
 
     public Set<Accesorio> getAccesorios() {

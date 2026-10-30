@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import './admin.css';
 import { Flower, Sprout, CalendarDays, ShoppingBag, Wallet, ArrowLeft, LogOut } from 'lucide-react';
 import { limpiarToken } from '../auth.js';
 import { logoutAdmin } from '../api.js';

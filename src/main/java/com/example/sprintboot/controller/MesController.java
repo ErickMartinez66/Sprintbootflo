@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/meses")
-@Tag(name = "Meses", description = "Resumen mensual de pedidos: ganancia total y cantidad entregados por mes/año")
+@Tag(name = "Meses", description = "Resumen mensual de pedidos: ganancia de entregados y cantidad total de pedidos por mes/año")
 public class MesController {
 
 	private final MesService mesService;
@@ -33,7 +33,7 @@ public class MesController {
 	}
 
 	@GetMapping
-	@Operation(summary = "Listar meses", description = "Devuelve todos los meses registrados con su ganancia total y cantidad de pedidos, ordenados del más reciente al más antiguo.")
+	@Operation(summary = "Listar meses", description = "Devuelve todos los meses con la ganancia de pedidos entregados y la cantidad total de pedidos, ordenados del más reciente al más antiguo.")
 	@ApiResponse(responseCode = "200", description = "Meses encontrados",
 			content = @Content(mediaType = "application/json", schema = @Schema(implementation = MesDTO.class)))
 	public List<MesDTO> listar() {
@@ -59,7 +59,7 @@ public class MesController {
 	}
 
 	@PostMapping("/sync")
-	@Operation(summary = "Sincronizar tabla de meses", description = "Regenera toda la tabla mes a partir de los pedidos existentes (suma ganancias y cuenta pedidos por mes/año).")
+	@Operation(summary = "Sincronizar tabla de meses", description = "Regenera toda la tabla mes a partir de los pedidos existentes (suma ganancias de entregados y cuenta todos los pedidos por mes/año).")
 	@ApiResponse(responseCode = "204", description = "Tabla de meses sincronizada")
 	public void sincronizar() {
 		mesService.sincronizar();
