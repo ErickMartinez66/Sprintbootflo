@@ -1,4 +1,4 @@
-﻿package com.example.sprintboot.entity;
+package com.example.sprintboot.entity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class Pedido {
     private Integer cantidadFlores;
 
     @Convert(converter = ColoresConverter.class)
-    @Column(name = "colores")
+    @Column(name = "colores", length = 2000)
     private List<DetalleColor> colores = new ArrayList<>();
 
     private LocalDate fechaEntrega;

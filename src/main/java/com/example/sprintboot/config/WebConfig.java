@@ -1,28 +1,28 @@
 package com.example.sprintboot.config;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.CacheControl;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-	@Value("${app.media.dir:./media}")
-	private String mediaDir;
-
 	private final AuthInterceptor authInterceptor;
 
-	public WebConfig(AuthInterceptor authInterceptor) {
+	private final String[] allowedOrigins;
+
+	public WebConfig(AuthInterceptor authInterceptor,
+			@Value("${app.cors.allowed-origins:http://localhost:5173}") String allowedOrigins) {
 		this.authInterceptor = authInterceptor;
+		this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
+				.map(String::trim)
+				.map(origen -> origen.replaceAll("/+$", ""))
+				.filter(origen -> !origen.isEmpty())
+				.toArray(String[]::new);
 	}
 
 	@Override
@@ -32,15 +32,12 @@ public class WebConfig implements WebMvcConfigurer {
 	}
 
 	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		Path carpeta = Paths.get(mediaDir).toAbsolutePath().normalize();
-		try {
-			Files.createDirectories(carpeta);
-		} catch (IOException e) {
-			throw new RuntimeException("No se pudo crear la carpeta de medios: " + e.getMessage(), e);
-		}
-		registry.addResourceHandler("/media/**")
-				.addResourceLocations("file:" + carpeta + "/")
-				.setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic());
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/api/**")
+				.allowedOrigins(allowedOrigins)
+				.allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+				.allowedHeaders("Authorization", "Content-Type", "Accept")
+				.exposedHeaders("Location")
+				.maxAge(3600);
 	}
 }

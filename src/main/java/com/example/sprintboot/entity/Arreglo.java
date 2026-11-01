@@ -1,4 +1,4 @@
-﻿package com.example.sprintboot.entity;
+package com.example.sprintboot.entity;
 
 import java.util.HashSet;
 import java.util.Set;

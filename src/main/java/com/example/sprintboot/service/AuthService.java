@@ -23,8 +23,8 @@ public class AuthService {
 	private final Map<String, Instant> tokens = new ConcurrentHashMap<>();
 
 	public AuthService(
-			@Value("${app.admin.usuario:adyeri}") String usuario,
-			@Value("${app.admin.password:Ruffus23*}") String password,
+			@Value("${app.admin.usuario}") String usuario,
+			@Value("${app.admin.password}") String password,
 			@Value("${app.admin.sesion.horas:8}") long horasSesion) {
 		this.usuario = usuario;
 		this.password = password;

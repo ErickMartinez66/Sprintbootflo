@@ -1,4 +1,4 @@
-﻿package com.example.sprintboot.config;
+package com.example.sprintboot.config;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import com.example.sprintboot.repository.AccesorioRepository;
 
 @Component
 @Order(1)
+@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true", matchIfMissing = true)
 public class AccesorioSeed implements ApplicationRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccesorioSeed.class);

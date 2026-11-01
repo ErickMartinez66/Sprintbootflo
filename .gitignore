@@ -39,3 +39,17 @@ build/
 *.db-wal
 *.db-shm
 data/
+
+### Frontend build
+frontend/dist/
+frontend/node_modules/
+
+### Local secrets
+.env
+.env.*
+application-local.properties
+
+### Python
+__pycache__/
+*.pyc
+

@@ -1,4 +1,4 @@
-﻿package com.example.sprintboot.entity;
+package com.example.sprintboot.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

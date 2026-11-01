@@ -53,7 +53,8 @@ public class AuthInterceptor implements HandlerInterceptor {
 		}
 
 		if (HttpMethod.GET.matches(metodo)) {
-			return "/api/arreglos/activos".equals(ruta)
+			return "/api/health".equals(ruta)
+					|| "/api/arreglos/activos".equals(ruta)
 					|| "/api/colores/activos".equals(ruta)
 					|| "/api/accesorios".equals(ruta);
 		}

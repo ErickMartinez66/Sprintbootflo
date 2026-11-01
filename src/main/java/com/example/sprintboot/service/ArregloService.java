@@ -1,4 +1,4 @@
-﻿package com.example.sprintboot.service;
+package com.example.sprintboot.service;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,13 +23,10 @@ public class ArregloService {
     private static final String GRADIENTE_POR_DEFECTO = "linear-gradient(160deg, #faead6, #efbe8f)";
 
     private final ArregloRepository arregloRepository;
-    private final ImagenService imagenService;
     private final AccesorioRepository accesorioRepository;
 
-    public ArregloService(ArregloRepository arregloRepository, ImagenService imagenService,
-            AccesorioRepository accesorioRepository) {
+    public ArregloService(ArregloRepository arregloRepository, AccesorioRepository accesorioRepository) {
         this.arregloRepository = arregloRepository;
-        this.imagenService = imagenService;
         this.accesorioRepository = accesorioRepository;
     }
 
@@ -67,9 +64,7 @@ public class ArregloService {
 
     public void eliminar(Long id) {
         Arreglo arreglo = buscar(id);
-        String imagenUrl = arreglo.getImagenUrl();
         arregloRepository.delete(arreglo);
-        imagenService.eliminarDesdeUrl(imagenUrl);
     }
 
     private Arreglo buscar(Long id) {

@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 import { obtenerToken, limpiarToken } from './auth.js';
 
 async function request(path, opciones = {}) {
@@ -213,23 +213,6 @@ export function actualizarInversionTotal(inversionTotal) {
     method: 'PUT',
     body: JSON.stringify(inversionTotal),
   });
-}
-
-export function subirImagen(archivo) {
-  const form = new FormData();
-  form.append('archivo', archivo);
-  return request('/imagenes', { method: 'POST', body: form });
-}
-
-export function eliminarImagen(url) {
-  const nombre = nombreImagen(url);
-  if (!nombre) return Promise.resolve(null);
-  return request(`/imagenes/${nombre}`, { method: 'DELETE' });
-}
-
-function nombreImagen(url) {
-  if (!url || !url.startsWith('/media/')) return null;
-  return url.slice('/media/'.length);
 }
 
 export function formatearPrecio(valor) {
